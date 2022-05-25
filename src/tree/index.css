@@ -1,6 +1,7 @@
 .tree {
   background-color: #efefef;
-  height: 100%;
+  height: 14%;
+  /* should be 100% */
   padding: 10px;
   font-family: monospace;
 }
@@ -19,4 +20,17 @@ li {
 
 ul {
   padding-inline-start: 38.4062px;
+}
+
+.fourFixedSpaces {
+  display: flex;
+  width: min-content;
+}
+
+.fourFixedSpaces {
+  background-color: green;
+}
+.newMarkupSpace {
+  background-clip: content-box;
+  background-color: red;
 }

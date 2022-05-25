@@ -1,27 +1,17 @@
 import './index.css';
+let node = require('./data.json');
 
-export default function Tree() {
+export default function Tree({ name, children }) {
+  let data = name ? { name, children } : node; //if name is not null, then it's a child node, else it's the root node
   return (
-    <div className="tree">
+    <div className={`${name ? '' : 'tree'}`}>
       <ul>
         <li>
-          1.root
-          <ul>
-            <li>1.1 ant</li>
-            <li>
-              1.2 bear
-              <ul>
-                <li>1.2.1 cat</li>
-                <li>
-                  1.2.2 dog
-                  <ul>
-                    <li>1.2.2.1 elephant</li>
-                  </ul>
-                </li>
-              </ul>
-            </li>
-            <li>1.3 frog</li>
-          </ul>
+          {name ? name : node.name}
+          {data.children.length > 0 &&
+            data.children.map(({ name, children }) => (
+              <Tree key={name} name={name} children={children} />
+            ))}
         </li>
       </ul>
     </div>

@@ -4,3 +4,19 @@
   padding: 10px;
   font-family: monospace;
 }
+
+ul li {
+  list-style-type: none;
+}
+
+.tree > ul:first-child {
+  padding-left: 0;
+}
+
+li {
+  padding-top: 16px;
+}
+
+ul {
+  padding-inline-start: 38.4062px;
+}

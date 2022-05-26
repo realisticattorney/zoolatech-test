@@ -1,24 +1,110 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {
+  // useCallback,
+  useEffect,
+  useState,
+  // useContext,
+  // createContext,
+  // useMemo,
+} from 'react';
 import { Col, Container, Row } from 'reactstrap';
 import './App.css';
 import Tree from './tree';
-let node = require('./tree/data.json');
-export default function App() {
-  const [data, setData] = useState(node);
+// let node = require('./tree/data.json'); //not needed anymore
 
-  const addNode = (input) => {
+// const TreeContext = createContext(null);
+
+// export function useTreeContext() {
+//   return useContext(TreeContext);
+// }
+
+export const getData = async () => {
+  //gets the data from the server
+  try {
+    const response = await fetch(
+      'https://api.jsonbin.io/v3/b/628fb7c905f31f68b3a8a68f/latest',
+      {
+        method: 'GET',
+        headers: {
+          'X-BIN-META': false,
+          'X-Master-Key':
+            '$2b$10$XeAkKAFXK7VqckhK.UvUt.FSJ2cFVYk.Aet1IPx4Lpg9UTB0lpUqe',
+        },
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.log('err', err);
+  }
+};
+
+export const writeData = async (input, method) => {
+  //this function writes the data to the server. I used PUT for both update and delete
+  try {
+    const response = await fetch(
+      'https://api.jsonbin.io/v3/b/628fb7c905f31f68b3a8a68f',
+      {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-BIN-META': false,
+          'X-Master-Key':
+            '$2b$10$XeAkKAFXK7VqckhK.UvUt.FSJ2cFVYk.Aet1IPx4Lpg9UTB0lpUqe',
+        },
+        body: JSON.stringify(input),
+      }
+    );
+    console.log('response WRITE', response);
+    await response.json();
+  } catch (err) {
+    console.log('err', err);
+  }
+};
+
+export default function App() {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    async function getDataHandler() {
+      getData().then((data) => {
+        setData(data);
+      });
+    }
+    getDataHandler();
+  }, []);
+
+  // const _data = useMemo(() => { //this is a failed attempt to work around the fact that each Tree component controls it's own state and only their children updates after adding/deleting entries. Nothing in it works.
+  //   return {
+  //     data: [...data],
+  //     addNode: async (newNode, id) => {
+  //       // await writeData([...data], 'PUT');
+  //       // const newData = await getData();
+  //       // setData(newData);
+  //     },
+  //     deleteNodeFromParent: async (name) => {
+  //       let newChildren = data.filter((child) => child.name !== name);
+  //       await writeData([...newChildren], 'PUT');
+  //       const newData = await getData();
+  //       setData(newData);
+  //     },
+  //   };
+  // }, [data]);
+
+  const addNode = async (input) => {
+    //this function adds a node to the root of the tree (no longer being a root)
     let newNode = { name: input, children: [] };
-    setData((prevState) => {
-      return [...prevState, newNode];
-    });
+    await writeData([...data, newNode], 'PUT');
+    const newData = await getData();
+    setData(newData);
   };
 
-  const deleteNodeFromParent = useCallback((name) => {
-    setData((prevState) => {
-      let newChildren = prevState.filter((child) => child.name !== name);
-      return [...newChildren];
-    });
-  }, []);
+  const deleteNodeFromParent = async (name) => {
+    //I believe this one would fail if all the lvl 0 nodes are deleted
+    let newChildren = data.filter((child) => child.name !== name);
+    await writeData([...newChildren], 'PUT');
+    const newData = await getData();
+    setData(newData);
+  };
 
   return (
     <div className="App">
@@ -247,6 +333,7 @@ export default function App() {
             </div>
           </Col>
           <Col sm={6}>
+            {/* <TreeContext.Provider value={_data}>  */}
             <div className="tree">
               <ul>
                 <li>
@@ -254,16 +341,18 @@ export default function App() {
                     data.map(({ name, children }, index, arr) => (
                       <Tree
                         key={name}
+                        id={index}
                         name={name}
                         children={children}
                         addNodeToParent={addNode}
-                        index={arr.length - 1 === index ? true : null}
+                        index={arr.length - 1 === index ? true : null} //if last item in array, show input text field
                         deleteNodeFromParent={deleteNodeFromParent}
                       />
                     ))}
                 </li>
               </ul>
             </div>
+            {/* </TreeContext.Provider> */}
           </Col>
         </Row>
       </Container>

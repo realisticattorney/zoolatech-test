@@ -1,9 +1,25 @@
-import React from "react";
-import { Col, Container, Row } from "reactstrap";
-import "./App.css";
-import Tree from "./tree";
-
+import React, { useCallback, useEffect, useState } from 'react';
+import { Col, Container, Row } from 'reactstrap';
+import './App.css';
+import Tree from './tree';
+let node = require('./tree/data.json');
 export default function App() {
+  const [data, setData] = useState(node);
+
+  const addNode = (input) => {
+    let newNode = { name: input, children: [] };
+    setData((prevState) => {
+      return [...prevState, newNode];
+    });
+  };
+
+  const deleteNodeFromParent = useCallback((name) => {
+    setData((prevState) => {
+      let newChildren = prevState.filter((child) => child.name !== name);
+      return [...newChildren];
+    });
+  }, []);
+
   return (
     <div className="App">
       <Container>
@@ -60,7 +76,7 @@ export default function App() {
                   </li>
                   <li>
                     Replace the inline <code>&nbsp</code> "styling" with an
-                    improved layout by editing the html and css in the{" "}
+                    improved layout by editing the html and css in the{' '}
                     <code>./src/tree/index.js</code>
                     and <code>./tree/index.css</code> files.
                   </li>
@@ -148,12 +164,12 @@ export default function App() {
                   <li>
                     Add an
                     <span role="img" aria-label="cross">
-                      {" "}
+                      {' '}
                       ❌
                     </span>
                     after every element on the tree. When a user clicks the
                     <span role="img" aria-label="cross">
-                      {" "}
+                      {' '}
                       ❌
                     </span>
                     , remove that node.
@@ -194,13 +210,13 @@ export default function App() {
                 And persistence!
               </div>
               <div className="App-instructions">
-                Check out the persistence API at:{" "}
+                Check out the persistence API at:{' '}
                 <a href="https://jsonbin.io/">https://jsonbin.io/</a>
                 <ol>
                   <li>
                     Setup: You will need to create an account to obtain the api
                     key. Then, create the Bin where you will Read and Update
-                    your JSON payload by referencing the Bin ID. See:{" "}
+                    your JSON payload by referencing the Bin ID. See:{' '}
                     <a href="https://jsonbin.io/api-reference/bins/read">
                       Bins API Reference
                     </a>
@@ -231,7 +247,23 @@ export default function App() {
             </div>
           </Col>
           <Col sm={6}>
-            <Tree />
+            <div className="tree">
+              <ul>
+                <li>
+                  {data.length > 0 &&
+                    data.map(({ name, children }, index, arr) => (
+                      <Tree
+                        key={name}
+                        name={name}
+                        children={children}
+                        addNodeToParent={addNode}
+                        index={arr.length - 1 === index ? true : null}
+                        deleteNodeFromParent={deleteNodeFromParent}
+                      />
+                    ))}
+                </li>
+              </ul>
+            </div>
           </Col>
         </Row>
       </Container>

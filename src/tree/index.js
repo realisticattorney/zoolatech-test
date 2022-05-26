@@ -1,30 +1,66 @@
 import './index.css';
-let node = require('./data.json');
+import React, { useCallback, useState } from 'react';
 
-export default function Tree({ name, children, dotsCount }) {
-  let data = name ? { name, children, dotsCount } : node; //if name is not null, then it's a child node, else it's the root node
-  let dotsCountAcc = dotsCount || 0; //dotsCountAcc is the number of dots that have been added to the current node
+export default function Tree(props) {
+  const [inputState, setInputState] = useState('');
+  const [data, setData] = useState(props);
+
+  const addNode = (input) => {
+    let newNode = { name: input, children: [] };
+    setData((prevState) => {
+      return { ...prevState, children: [...prevState.children, newNode] };
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    data.addNodeToParent(inputState);
+    setInputState('');
+  };
+
+  const deleteNodeFromParent = useCallback((name) => {
+    setData((prevState) => {
+      let newChildren = prevState.children.filter(
+        (child) => child.name !== name
+      );
+      return { ...prevState, children: newChildren };
+    });
+  }, []);
+
   return (
-    <div className={`${name ? '' : 'tree'}`}>
+    <>
+      {data.name}
+      <button onClick={() => data.deleteNodeFromParent(data.name)}>X</button>
       <ul>
         <li>
-          {name
-            ? name
-                .substring(0, 1)
-                .concat('.'.repeat(dotsCount))
-                .concat(name.substring(1))
-            : node.name}
           {data.children.length > 0 &&
-            data.children.map(({ name, children }) => (
+            data.children.map(({ name, children }, index) => (
               <Tree
                 key={name}
                 name={name}
                 children={children}
-                dotsCount={dotsCountAcc + 1}
+                index={data.children.length - 1 === index ? true : null}
+                addNodeToParent={addNode}
+                deleteNodeFromParent={deleteNodeFromParent}
               />
             ))}
         </li>
       </ul>
-    </div>
+      {props.index && (
+        <form
+          action=""
+          onSubmit={(e) => {
+            handleSubmit(e);
+          }}
+        >
+          <input
+            type="text"
+            className="inputField"
+            value={inputState}
+            onChange={(e) => setInputState(e.target.value)}
+          />
+        </form>
+      )}
+    </>
   );
 }

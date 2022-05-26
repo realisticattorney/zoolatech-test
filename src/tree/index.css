@@ -20,3 +20,7 @@ li {
 ul {
   padding-inline-start: 38.4062px;
 }
+
+.inputField {
+  margin-bottom: 16px;
+}
